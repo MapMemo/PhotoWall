@@ -11,7 +11,7 @@ before_install:
   - pip install --user codecov
 
 script:
-  - mvn -s clean test
+  - mvn test -B
 
 after_success:
   - codecov
