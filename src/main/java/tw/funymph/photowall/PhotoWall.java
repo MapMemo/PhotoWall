@@ -6,7 +6,7 @@
  */
 package tw.funymph.photowall;
 
-import static spark.Spark.*;
+import tw.funymph.photowall.ws.AuthenticationWebService;
 
 /**
  * The main entry of the PhotoWall Web service.
@@ -18,8 +18,6 @@ import static spark.Spark.*;
 public class PhotoWall {
 
 	public static void main(String[] args) {
-		get("/hello", (request, response) -> {
-			return "Hello World";
-		});
+		new AuthenticationWebService().setupRoutes();
 	}
 }
