@@ -17,9 +17,16 @@ import spark.Route;
  * @version 1.0
  * @since 1.0
  */
-public interface WebService {
+public interface SparkWebService {
 
-	public static Route metaAware(Route route) {
+	/**
+	 * Intercept the route with the additional function that wraps the result
+	 * or exception as the well-formatted response.
+	 * 
+	 * @param route the route to intercept
+	 * @return the intercepted route
+	 */
+	public default Route metaAware(Route route) {
 		return (request, response) -> {
 			MetaAwareResult result = new MetaAwareResult();
 			response.type("application/json");
@@ -38,5 +45,8 @@ public interface WebService {
 		};
 	}
 
-	public void setupRoutes();
+	/**
+	 * Setup the routes for the instance.
+	 */
+	public void routes();
 }
