@@ -4,12 +4,9 @@
  *
  * This file is a part of the PhotoWall project.
  */
-
 /**
- * This package is the root package of PhotoWall project.
- * 
- * @author Spirit Tu
- * @version 1.0
- * @since 1.0
+ * @author spirit
+ * @version 
+ * @since 
  */
-package tw.funymph.photowall;
+package tw.funymph.photowall.core;
