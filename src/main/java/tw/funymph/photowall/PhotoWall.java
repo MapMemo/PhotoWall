@@ -9,7 +9,7 @@ package tw.funymph.photowall;
 import static spark.Spark.notFound;
 import static spark.Spark.path;
 import static tw.funymph.photowall.utils.JsonUtils.toJson;
-import static tw.funymph.photowall.ws.ContentTypes.ApplicationJson;
+import static tw.funymph.photowall.ws.HttpContentTypes.ApplicationJson;
 
 import tw.funymph.photowall.ws.MetaAwareResult;
 import tw.funymph.photowall.ws.WebServiceException;

@@ -1,4 +1,4 @@
-/* ContentTypes.java created on Feb 20, 2017.
+/* HttpContentTypes.java created on Feb 20, 2017.
  * 
  * Copyright (C) Funymph all rights reserved.
  *
@@ -7,13 +7,13 @@
 package tw.funymph.photowall.ws;
 
 /**
- * This interface define the constants for HTTP content types.
+ * This interface defines the constants for HTTP content types.
  * 
  * @author Spirit Tu
  * @version 1.0
  * @since 1.0
  */
-public interface ContentTypes {
+public interface HttpContentTypes {
 
 	public static final String ApplicationJson = "application/json";
 }
