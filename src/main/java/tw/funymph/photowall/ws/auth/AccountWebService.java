@@ -25,7 +25,7 @@ public class AccountWebService implements SparkWebService {
 
 	public Object hello(Request request, Response response) throws Exception {
 		if (new Random().nextBoolean()) {
-			throw new Exception();
+			throw new OutOfMemoryError();
 		}
 		return "Hello World";
 	}

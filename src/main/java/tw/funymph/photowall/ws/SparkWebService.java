@@ -6,7 +6,7 @@
  */
 package tw.funymph.photowall.ws;
 
-import com.google.gson.Gson;
+import static tw.funymph.photowall.utils.JsonUtils.toJson;
 
 import spark.Route;
 
@@ -17,7 +17,7 @@ import spark.Route;
  * @version 1.0
  * @since 1.0
  */
-public interface SparkWebService {
+public interface SparkWebService extends HttpStatusCodes, ContentTypes {
 
 	/**
 	 * Intercept the route with the additional function that wraps the result
@@ -27,21 +27,27 @@ public interface SparkWebService {
 	 * @return the intercepted route
 	 */
 	public default Route metaAware(Route route) {
-		return (request, response) -> {
+		return jsonize((request, response) -> {
 			MetaAwareResult result = new MetaAwareResult();
-			response.type("application/json");
 			try {
 				Object data = route.handle(request, response);
-				return new Gson().toJson(result.succeed(data));
+				return result.succeed(data);
 			}
 			catch (WebServiceException e) {
 				response.status(e.getStatusCode());
-				return new Gson().toJson(result.fail(request.pathInfo(), request.requestMethod(), e));
+				return result.fail(request.pathInfo(), request.requestMethod(), e);
 			}
-			catch (Exception e) {
-				response.status(500);
-				return new Gson().toJson(result.fail(request.pathInfo(), request.requestMethod(), new WebServiceException(e)));
+			catch (Throwable e) {
+				response.status(InternalServerError);
+				return result.fail(request.pathInfo(), request.requestMethod(), new WebServiceException(e));
 			}
+		});
+	}
+
+	public default Route jsonize(Route route) {
+		return (request, response) -> {
+			response.type(ApplicationJson);
+			return toJson(route.handle(request, response));
 		};
 	}
 

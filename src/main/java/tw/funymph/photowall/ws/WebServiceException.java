@@ -40,7 +40,7 @@ public class WebServiceException extends Exception {
 	 * 
 	 * @param e the unexpected exception
 	 */
-	public WebServiceException(Exception e) {
+	public WebServiceException(Throwable e) {
 		this(InternalServerError, UnknownError, e);
 	}
 
@@ -53,7 +53,7 @@ public class WebServiceException extends Exception {
 	 * @param error the error code
 	 * @param e the domain-specific exception
 	 */
-	public WebServiceException(int status, int error, Exception e) {
+	public WebServiceException(int status, int error, Throwable e) {
 		super("Unexpected internal server error", e);
 		statusCode = status;
 		errorCode = error;
