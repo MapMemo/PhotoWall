@@ -25,7 +25,7 @@ public class AccountWebService implements SparkWebService {
 
 	public Object hello(Request request, Response response) throws Exception {
 		if (new Random().nextBoolean()) {
-			throw new Exception();
+			throw new OutOfMemoryError();
 		}
 		return "Hello World";
 	}
@@ -37,7 +37,7 @@ public class AccountWebService implements SparkWebService {
 	@Override
 	public void routes() {
 		path("/accounts", () -> {
-			get("/hello", metaAware(this::hello));
+			get("/hello", metaAware(authenticate(this::hello, (request) -> request.headers(Authorization) != null)));
 		});
 	}
 }

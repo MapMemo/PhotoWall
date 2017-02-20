@@ -74,6 +74,56 @@ public class SparkWebServiceTests implements SparkWebService {
 		verify(response).status(404);
 	}
 
+	@Test
+	public void testAuthenticate() throws Exception {
+		Request request = mock(Request.class);
+		Response response = mock(Response.class);
+		Route route = mock(Route.class);
+		Route result = authenticate(route, (req) -> true);
+		result.handle(request, response);
+		verify(route).handle(request, response);
+	}
+
+	@Test
+	public void testAuthenticateFailed() throws Exception {
+		Request request = mock(Request.class);
+		Response response = mock(Response.class);
+		Route route = mock(Route.class);
+		Route result = authenticate(route, (req) -> false);
+		try {
+			result.handle(request, response);
+		}
+		catch (WebServiceException e) {
+			assertEquals(401, e.getStatusCode());
+		}
+		verify(route, never()).handle(request, response);
+	}
+
+	@Test
+	public void testAuthorize() throws Exception {
+		Request request = mock(Request.class);
+		Response response = mock(Response.class);
+		Route route = mock(Route.class);
+		Route result = authorize(route, (req) -> true);
+		result.handle(request, response);
+		verify(route).handle(request, response);
+	}
+
+	@Test
+	public void testAuthorizeFailed() throws Exception {
+		Request request = mock(Request.class);
+		Response response = mock(Response.class);
+		Route route = mock(Route.class);
+		Route result = authorize(route, (req) -> false);
+		try {
+			result.handle(request, response);
+		}
+		catch (WebServiceException e) {
+			assertEquals(403, e.getStatusCode());
+		}
+		verify(route, never()).handle(request, response);
+	}
+
 	@Override
 	public void routes() {
 		// do nothing
