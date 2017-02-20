@@ -6,14 +6,15 @@
  */
 package tw.funymph.photowall;
 
-import static spark.Spark.notFound;
-import static spark.Spark.path;
+import static spark.Spark.*;
 import static tw.funymph.photowall.utils.JsonUtils.toJson;
 import static tw.funymph.photowall.ws.HttpContentTypes.ApplicationJson;
+import static tw.funymph.photowall.wss.WebSocketEventHandler.EventPath;
 
 import tw.funymph.photowall.ws.MetaAwareResult;
 import tw.funymph.photowall.ws.WebServiceException;
 import tw.funymph.photowall.ws.auth.AccountWebService;
+import tw.funymph.photowall.wss.WebSocketEventHandler;
 
 /**
  * The main entry of the PhotoWall Web service.
@@ -25,6 +26,7 @@ import tw.funymph.photowall.ws.auth.AccountWebService;
 public class PhotoWall {
 
 	public static void main(String[] args) {
+		webSocket(EventPath, WebSocketEventHandler.class);
 		path("/ws", () -> {
 			new AccountWebService().routes();
 		});
