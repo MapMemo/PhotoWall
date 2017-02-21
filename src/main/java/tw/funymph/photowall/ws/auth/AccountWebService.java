@@ -6,13 +6,18 @@
  */
 package tw.funymph.photowall.ws.auth;
 
-import static spark.Spark.*;
+import static spark.Spark.post;
+import static tw.funymph.photowall.ws.auth.AccountFormatter.publicInfo;
 
-import java.util.Random;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import spark.Request;
 import spark.Response;
+import tw.funymph.photowall.core.AccountManager;
+import tw.funymph.photowall.core.AccountManagerException;
 import tw.funymph.photowall.ws.SparkWebService;
+import tw.funymph.photowall.ws.WebServiceException;
 
 /**
  * This class handles the requests to <code>/ws/accounts/*</code>.
@@ -23,21 +28,28 @@ import tw.funymph.photowall.ws.SparkWebService;
  */
 public class AccountWebService implements SparkWebService {
 
-	public Object hello(Request request, Response response) throws Exception {
-		if (new Random().nextBoolean()) {
-			throw new OutOfMemoryError();
-		}
-		return "Hello World";
+	private AccountManager accountManager;
+
+	public AccountWebService(AccountManager manager) {
+		accountManager = manager;
 	}
 
 	public Object register(Request request, Response response) throws Exception {
-		return null;
+		try {
+			RegistrationRequest registration = new Gson().fromJson(request.body(), RegistrationRequest.class);
+			registration.validate();
+			return publicInfo(accountManager.register(registration.getIdentity(), registration.getNickname(), registration.getPassword()));
+		}
+		catch (JsonSyntaxException e) {
+			throw new WebServiceException(BadRequest, -1, "invalid request format");
+		}
+		catch (AccountManagerException e) {
+			throw new WebServiceException(BadRequest, -1, e.getMessage());
+		}
 	}
 
 	@Override
 	public void routes() {
-		path("/accounts", () -> {
-			get("/hello", metaAware(authenticate(this::hello, (request) -> request.headers(Authorization) != null)));
-		});
+		post("/accounts", metaAware(this::register));
 	}
 }
