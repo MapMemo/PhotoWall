@@ -30,10 +30,24 @@ public class AccountWebService implements SparkWebService {
 
 	private AccountManager accountManager;
 
+	/**
+	 * Construct a <code>AccountWebService</code> instance with the
+	 * account manager (main controller).
+	 * 
+	 * @param manager the account manager
+	 */
 	public AccountWebService(AccountManager manager) {
 		accountManager = manager;
 	}
 
+	/**
+	 * This method handles <code>POST /ws/accounts</code> request to register a new account.
+	 * 
+	 * @param request the request
+	 * @param response the response
+	 * @return the response body
+	 * @throws Exception if any error occurs
+	 */
 	public Object register(Request request, Response response) throws Exception {
 		try {
 			RegistrationRequest registration = new Gson().fromJson(request.body(), RegistrationRequest.class);

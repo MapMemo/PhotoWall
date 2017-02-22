@@ -9,9 +9,11 @@ package tw.funymph.photowall.utils;
 import java.security.MessageDigest;
 
 /**
- * @author spirit
- * @version 
- * @since 
+ * This interface provides utility methods for {@link String}.
+ * 
+ * @author Spirit Tu
+ * @version 1.0
+ * @since 1.0
  */
 public interface StringUtils {
 

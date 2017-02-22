@@ -12,6 +12,8 @@ import tw.funymph.photowall.core.repository.AccountRepository;
 import tw.funymph.photowall.core.repository.RepositoryException;
 
 /**
+ * This class provides the default implementation of {@link AccountManager}.
+ * 
  * @author Spirit Tu
  * @version 1.0
  * @since 1.0
@@ -21,6 +23,12 @@ public class DefaultAccountManager implements AccountManager {
 	private PasswordEncoder passwordEncoder;
 	private AccountRepository accountRepository;
 
+	/**
+	 * Construct a <code>DefaultAccountManager</code> instance with the
+	 * account repository.
+	 * 
+	 * @param repository the account repository
+	 */
 	public DefaultAccountManager(AccountRepository repository) {
 		accountRepository = repository;
 		passwordEncoder = new SHA1PasswordEncoder();
