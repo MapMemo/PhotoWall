@@ -15,5 +15,7 @@ package tw.funymph.photowall.ws;
  */
 public interface HttpContentTypes {
 
+	public static final String PlainText = "text/plain";
 	public static final String ApplicationJson = "application/json";
+	public static final String BinaryOctetStream = "binary/octet-stream";
 }

@@ -6,16 +6,17 @@
  */
 package tw.funymph.photowall;
 
+import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 import static spark.Spark.*;
-import static tw.funymph.photowall.utils.JsonUtils.toJson;
-import static tw.funymph.photowall.ws.HttpContentTypes.ApplicationJson;
 import static tw.funymph.photowall.ws.HttpStatusCodes.NotFound;
+import static tw.funymph.photowall.ws.SparkWebService.enableCORS;
+import static tw.funymph.photowall.ws.SparkWebService.wrapException;
 import static tw.funymph.photowall.wss.WebSocketEventHandler.EventPath;
 
 import tw.funymph.photowall.core.AccountManager;
 import tw.funymph.photowall.core.DefaultAccountManager;
 import tw.funymph.photowall.core.repository.InMemoryAccountRepository;
-import tw.funymph.photowall.ws.MetaAwareResult;
 import tw.funymph.photowall.ws.WebServiceException;
 import tw.funymph.photowall.ws.auth.AccountWebService;
 import tw.funymph.photowall.wss.WebSocketEventHandler;
@@ -42,13 +43,13 @@ public class PhotoWall {
 
 	public static void main(String[] args) {
 		webSocket(EventPath, WebSocketEventHandler.class);
+		notFound((request, response) -> {
+			return wrapException(response, currentTimeMillis(), new WebServiceException(NotFound, -1, format("no action for %s %s", request.requestMethod(), request.pathInfo())));
+		});
+		init();
+		enableCORS();
 		path("/ws", () -> {
 			new AccountWebService(sharedInstance().getAccountManager()).routes();
-		});
-		notFound((request, response) -> {
-			response.type(ApplicationJson);
-			MetaAwareResult metaAwareResult = new MetaAwareResult();
-			return toJson(metaAwareResult.fail(request.pathInfo(), request.requestMethod(), new WebServiceException(NotFound, -1, "no action for the path")));
 		});
 	}
 

@@ -72,4 +72,9 @@ public class StringUtilsTests {
 			fail("it should not come to here!");
 		}
 	}
+
+	@Test
+	public void testJoin() {
+		assertEquals("1,2,3,4", StringUtils.join(",", "1", "2", "3", "4"));
+	}
 }

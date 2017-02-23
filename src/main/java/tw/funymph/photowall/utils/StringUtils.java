@@ -6,6 +6,9 @@
  */
 package tw.funymph.photowall.utils;
 
+import static java.lang.String.format;
+import static java.util.Arrays.stream;
+
 import java.security.MessageDigest;
 
 /**
@@ -25,7 +28,7 @@ public interface StringUtils {
 	 * @param string the string to be encoded
 	 * @return the SHA1 string
 	 */
-	public static String toSHA1(String string) {
+	public static String toSHA1(final String string) {
 		return messageDigest(string, "SHA-1", "iso-8859-1");
     }
 
@@ -37,7 +40,7 @@ public interface StringUtils {
 	 * @param charset the character set of the string
 	 * @return the encoded string
 	 */
-	public static String messageDigest(String string, String algorithm, String charset) {
+	public static String messageDigest(final String string, final String algorithm, final String charset) {
 		try {
 	        MessageDigest md = MessageDigest.getInstance(algorithm);
 	        md.update(string.getBytes(charset), 0, string.length());
@@ -56,7 +59,7 @@ public interface StringUtils {
 	 * @param bytes the unsigned byte array to be converted
 	 * @return the hexadecimal string
 	 */
-	public static String toHexString(byte[] bytes) {
+	public static String toHexString(final byte[] bytes) {
 		char[] hexChars = new char[bytes.length * 2];
 		int value;
 		for (int index = 0; index < bytes.length; index++) {
@@ -73,7 +76,7 @@ public interface StringUtils {
 	 * @param string the string to check
 	 * @return true if the string is null or blank
 	 */
-	public static boolean isBlank(String string) {
+	public static boolean isBlank(final String string) {
 		return string == null || string.trim().isEmpty();
 	}
 
@@ -83,7 +86,7 @@ public interface StringUtils {
 	 * @param string the string to check
 	 * @return true if the string is not blank
 	 */
-	public static boolean notBlank(String string) {
+	public static boolean notBlank(final String string) {
 		return string != null && !string.trim().isEmpty();
 	}
 
@@ -94,11 +97,34 @@ public interface StringUtils {
 	 * @param value the value to assert
 	 * @param exceptionMessage the exception message
 	 * @throws IllegalArgumentException if the value is null or empty
+	 * @return the value to assert
 	 */
-	public static void assertNotBlank(String value, String exceptionMessage) {
+	public static String assertNotBlank(final String value, final String exceptionMessage) {
 		if (notBlank(value)) {
-			return;
+			return value;
 		}
 		throw new IllegalArgumentException(exceptionMessage);
+	}
+
+	/**
+	 * Join a couple of strings as a single string with separator. For example,
+	 * join("|", "a", "b", "c") returns "a|b|c".
+	 * 
+	 * @param separator the separator between strings
+	 * @param strings the strings to be joined
+	 * @return the joined string
+	 */
+	public static String join(final String separator, final String... strings) {
+		return stream(strings).reduce((s1, s2) -> format("%s%s%s", s1, separator, s2)).get();
+	}
+
+	public static boolean equalsIgnoreCase(String string1, String string2) {
+		if (string1 == null && string2 == null) {
+			return true;
+		}
+		if (string1 != null && string2 != null) {
+			return string1.compareToIgnoreCase(string2) == 0;
+		}
+		return false;
 	}
 }

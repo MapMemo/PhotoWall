@@ -6,7 +6,6 @@
  */
 package tw.funymph.photowall.core;
 
-import static org.hamcrest.CoreMatchers.anything;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -17,8 +16,6 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
-
 import tw.funymph.photowall.core.repository.AccountRepository;
 import tw.funymph.photowall.core.repository.RepositoryException;
 import tw.funymph.photowall.utils.StringUtils;
