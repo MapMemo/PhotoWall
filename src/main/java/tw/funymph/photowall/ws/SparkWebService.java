@@ -6,11 +6,21 @@
  */
 package tw.funymph.photowall.ws;
 
+import static java.lang.String.valueOf;
+import static spark.Spark.before;
+import static spark.Spark.options;
+import static java.lang.System.currentTimeMillis;
 import static tw.funymph.photowall.utils.JsonUtils.toJson;
+import static tw.funymph.photowall.utils.MapUtils.asMap;
+import static tw.funymph.photowall.utils.MapUtils.notEmpty;
+import static tw.funymph.photowall.utils.StringUtils.equalsIgnoreCase;
+import static tw.funymph.photowall.utils.StringUtils.join;
 
+import java.util.Map;
 import java.util.function.Predicate;
 
 import spark.Request;
+import spark.Response;
 import spark.Route;
 
 /**
@@ -20,7 +30,35 @@ import spark.Route;
  * @version 1.0
  * @since 1.0
  */
-public interface SparkWebService extends HttpStatusCodes, HttpHeaders, HttpContentTypes {
+public interface SparkWebService extends HttpMethods, HttpStatusCodes, HttpHeaders, HttpContentTypes {
+
+	public static final String[] DefaultAllowMethods = { Get, Delete, Put, Post, Options };
+	public static final String[] DefaultAllowHeaders = { Authorization, AuthToken, Accept, AcceptCharset, AcceptEncoding, AcceptLanguage, AcceptDatetime, ContentType, ContentDisposition };
+
+	public static void enableCORS() {
+		enableCORS("*", DefaultAllowMethods, DefaultAllowHeaders);
+	}
+
+	public static void enableCORS(final String origin, final String[] methods, final String[] headers) {
+		options("/*", (request, response) -> {
+			String accessControlRequestHeaders = request.headers(AccessControlRequestHeaders);
+			if (accessControlRequestHeaders != null) {
+				response.header(AccessControlAllowHeaders, accessControlRequestHeaders);
+			}
+
+			String accessControlRequestMethod = request.headers(AccessControlRequestMethod);
+			if (accessControlRequestMethod != null) {
+				response.header(AccessControlAllowMethods, accessControlRequestMethod);
+			}
+			return "";
+		});
+
+		before((request, response) -> {
+			response.header(AccessControlAllowOrigin, origin);
+			response.header(AccessControlRequestMethod, join(", ", methods));
+			response.header(AccessControlAllowHeaders, join(", ", headers));
+		});
+	}
 
 	/**
 	 * Intercept the route with the additional function that wraps the result
@@ -30,34 +68,37 @@ public interface SparkWebService extends HttpStatusCodes, HttpHeaders, HttpConte
 	 * @return the intercepted route
 	 */
 	public default Route metaAware(Route route) {
-		return jsonize((request, response) -> {
-			MetaAwareResult result = new MetaAwareResult();
+		return (request, response) -> {
+			long timestamp = currentTimeMillis();
+			response.header(Timestamp, valueOf(timestamp));
 			try {
-				Object data = route.handle(request, response);
-				return result.succeed(data);
+				Object result = route.handle(request, response);
+				response.header(Elapsed, valueOf((currentTimeMillis() - timestamp)));
+				if (result != null) {
+					response.type(ApplicationJson);
+					return toJson(asMap("data", result));
+				}
+				return equalsIgnoreCase(request.requestMethod(), Get)? null : "";
 			}
 			catch (WebServiceException e) {
-				response.status(e.getStatusCode());
-				return result.fail(request.pathInfo(), request.requestMethod(), e);
+				return wrapException(response, timestamp, e);
 			}
 			catch (Throwable e) {
-				response.status(InternalServerError);
-				return result.fail(request.pathInfo(), request.requestMethod(), new WebServiceException(e));
+				return wrapException(response, timestamp, new WebServiceException(e));
 			}
-		});
+		};
 	}
 
-	/**
-	 * Convert the resulting object to JSON format as the response.
-	 * 
-	 * @param route the route to generate the result
-	 * @return the route that format the object as JSON
-	 */
-	public default Route jsonize(Route route) {
-		return (request, response) -> {
-			response.type(ApplicationJson);
-			return toJson(route.handle(request, response));
-		};
+	public static Object wrapException(Response response, long timestamp, WebServiceException e) {
+		response.type(ApplicationJson);
+		response.status(e.getStatusCode());
+		response.header(Elapsed, valueOf((currentTimeMillis() - timestamp)));
+		Map<String, Object> error = asMap("code", e.getErrorCode());
+		error.put("message", e.getMessage());
+		if (notEmpty(e.getInfo())) {
+			error.put("info", e.getInfo());
+		}
+		return toJson(asMap("error", error));
 	}
 
 	/**

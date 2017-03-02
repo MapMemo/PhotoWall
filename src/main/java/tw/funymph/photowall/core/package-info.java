@@ -4,9 +4,12 @@
  *
  * This file is a part of the PhotoWall project.
  */
+
 /**
- * @author spirit
- * @version 
- * @since 
+ * This package contains the interfaces and classes in the domain model.
+ *  
+ * @author Spirit Tu
+ * @version 1.0
+ * @since 1.0
  */
 package tw.funymph.photowall.core;
