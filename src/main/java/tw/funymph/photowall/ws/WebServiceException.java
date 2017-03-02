@@ -54,7 +54,7 @@ public class WebServiceException extends Exception {
 	 * @param e the domain-specific exception
 	 */
 	public WebServiceException(int status, int error, Throwable e) {
-		super("Unexpected internal server error", e);
+		super(e.getMessage(), e);
 		statusCode = status;
 		errorCode = error;
 		info = unmodifiableMap(emptyMap());

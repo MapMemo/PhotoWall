@@ -131,15 +131,15 @@ public class SparkWebServiceTests implements SparkWebService {
 
 	private void assertSucceed(Object result) {
 		Map<String, Object> json = new Gson().fromJson(result.toString(), Map.class);
-		assertEquals(2, json.size());
-		assertNotNull(json.get("meta"));
+		assertEquals(1, json.size());
 		assertNotNull(json.get("data"));
 	}
 
 	private void assertFail(Object result) {
 		Map<String, Object> json = new Gson().fromJson(result.toString(), Map.class);
-		assertEquals(2, json.size());
-		assertNotNull(json.get("meta"));
-		assertNotNull(json.get("error"));
+		Map<String, Object> error = (Map<String, Object>) json.get("error");
+		assertNotNull(error);
+		assertNotNull(error.get("code"));
+		assertNotNull(error.get("message"));
 	}
 }

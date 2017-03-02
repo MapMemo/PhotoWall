@@ -1,4 +1,4 @@
-/* package-info.java created on Feb 18, 2017.
+/* package-info.java created on Feb 20, 2017.
  * 
  * Copyright (C) Funymph all rights reserved.
  *
@@ -6,10 +6,10 @@
  */
 
 /**
- * This package contains the interfaces and classes in the domain model.
- *  
+ * This package contains the classes for Web Socket services.
+ * 
  * @author Spirit Tu
  * @version 1.0
  * @since 1.0
  */
-package tw.funymph.photowall.core;
+package tw.funymph.photowall.wss;
