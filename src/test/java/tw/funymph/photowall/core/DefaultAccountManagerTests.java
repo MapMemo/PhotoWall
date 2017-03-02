@@ -35,7 +35,7 @@ public class DefaultAccountManagerTests {
 	@Before
 	public void setup() {
 		repository = mock(AccountRepository.class);
-		testee = new DefaultAccountManager(repository);
+		testee = new DefaultAccountManager(repository, null);
 	}
 
 	@Test

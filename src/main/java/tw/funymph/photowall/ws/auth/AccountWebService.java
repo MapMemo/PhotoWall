@@ -8,6 +8,7 @@ package tw.funymph.photowall.ws.auth;
 
 import static java.lang.String.format;
 import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Paths.get;
 import static spark.Spark.post;
 import static tw.funymph.photowall.utils.IOUtils.copy;
 import static tw.funymph.photowall.utils.IOUtils.toMD5;
@@ -18,7 +19,6 @@ import static tw.funymph.photowall.ws.HttpHeaders.contentDispositionFilename;
 
 import java.io.FileOutputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -27,6 +27,8 @@ import spark.Request;
 import spark.Response;
 import tw.funymph.photowall.core.AccountManager;
 import tw.funymph.photowall.core.AccountManagerException;
+import tw.funymph.photowall.core.Authentication;
+import tw.funymph.photowall.ws.HttpHeaders;
 import tw.funymph.photowall.ws.SparkWebService;
 import tw.funymph.photowall.ws.WebServiceException;
 
@@ -51,8 +53,16 @@ public class AccountWebService implements SparkWebService {
 		accountManager = manager;
 	}
 
+	@Override
+	public void routes() {
+		post("/accounts", metaAware(this::register));
+		post("/me/portrait", metaAware(this::changePortrait));
+		post("/authentications", metaAware(this::login));
+	}
+
 	/**
-	 * This method handles <code>POST /ws/accounts</code> request to register a new account.
+	 * This method handles <code>POST /ws/accounts</code> request to register
+	 * a new account.
 	 * 
 	 * @param request the request
 	 * @param response the response
@@ -73,21 +83,44 @@ public class AccountWebService implements SparkWebService {
 		}
 	}
 
+	/**
+	 * This method handles <code>POST /ws/authentications</code> request to login
+	 * as an existing account.
+	 * 
+	 * @param request the request
+	 * @param response the response
+	 * @return {@code null} the login information is attached in the response header
+	 * @throws Exception if any error occurs
+	 */
+	public Object login(Request request, Response response) throws Exception {
+		String[] credentials = HttpHeaders.basicAuthorization(request.headers(Authorization));
+		if (credentials == null || credentials.length != 2) {
+			throw new AccountManagerException("invalid basic authorization information");
+		}
+		Authentication authentication = accountManager.login(credentials[0], credentials[1]);
+		response.header(AuthToken, authentication.getToken());
+		return null;
+	}
+
+	/**
+	 * This method handles <code>POST /ws/me/portrait</code> request to change
+	 * his/her portrait.
+	 * 
+	 * @param request the request body
+	 * @param response the response
+	 * @return {@code null} the uploaded checksum is attached in the response header
+	 * @throws Exception if any error occurred
+	 */
 	public Object changePortrait(Request request, Response response) throws Exception {
 		if (!equalsIgnoreCase(BinaryOctetStream, request.headers(ContentType))) {
 			throw new WebServiceException(NotAcceptable, -1, format("the content type must be %s", BinaryOctetStream));
 		}
+		// TODO: get the account information from the request and use the account's hashed information as the saved filename
 		String contentDisposition = assertNotBlank(request.headers(ContentDisposition), "the content-disposition is required");
-		Path path = Paths.get("files", contentDispositionFilename(contentDisposition));
+		Path path = get("files", contentDispositionFilename(contentDisposition));
 		createDirectories(path.getParent());
 		copy(request.raw().getInputStream(), new FileOutputStream(path.toFile()));
 		response.header(ETag, toMD5(path.toFile()));
 		return null;
-	}
-
-	@Override
-	public void routes() {
-		post("/accounts", metaAware(this::register));
-		post("/accounts/portrait", metaAware(this::changePortrait));
 	}
 }

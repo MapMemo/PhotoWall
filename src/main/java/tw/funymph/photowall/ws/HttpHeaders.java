@@ -6,6 +6,7 @@
  */
 package tw.funymph.photowall.ws;
 
+import static java.util.Base64.getDecoder;
 import static java.util.regex.Pattern.compile;
 
 import java.util.regex.Matcher;
@@ -18,6 +19,9 @@ import java.util.regex.Matcher;
  * @since 1.0
  */
 public interface HttpHeaders {
+
+	public static final String BasicAuthorizationPattern = "Basic (.+)";
+	public static final String AttachmentFilenamePattern = "attachment[\\s;]+filename=\"(.+)\"";
 
 	// Cache control
 	public static final String ETag = "ETag";
@@ -57,10 +61,26 @@ public interface HttpHeaders {
 	 * @return the filename
 	 */
 	public static String contentDispositionFilename(String disposition) {
-		Matcher matcher = compile("attachment[\\s;]+filename=\"(.+)\"").matcher(disposition);
+		Matcher matcher = compile(AttachmentFilenamePattern).matcher(disposition);
 		if (!matcher.find()) {
 			throw new IllegalArgumentException("attachment filename can't be identified");
 		}
 		return matcher.group(1);
+	}
+
+	/**
+	 * Get the decoded authorization information.
+	 * 
+	 * @param authorization the Base64 encoded information
+	 * @return the decoded information
+	 */
+	public static String[] basicAuthorization(String authorization) {
+		Matcher matcher = compile(BasicAuthorizationPattern).matcher(authorization);
+		if (!matcher.find()) {
+			throw new IllegalArgumentException("the basic authorization is not specified");
+		}
+		String encodedCredential = matcher.group(1);
+		String decodedCredential = new String(getDecoder().decode(encodedCredential));
+		return decodedCredential.split(":");
 	}
 }

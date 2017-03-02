@@ -27,4 +27,14 @@ public interface AccountManager {
 	 * @throws IllegalArgumentException if one of the arguments is null or empty
 	 */
 	public Account register(String identity, String nickname, String password) throws AccountManagerException;
+
+	/**
+	 * Login as the given account identity with the specified password.
+	 * 
+	 * @param identity the account identity
+	 * @param password the (hashed) password
+	 * @return the authentication with the identity and the access token
+	 * @throws AccountManagerException if the identity and password does not match
+	 */
+	public Authentication login(String identity, String password) throws AccountManagerException;
 }

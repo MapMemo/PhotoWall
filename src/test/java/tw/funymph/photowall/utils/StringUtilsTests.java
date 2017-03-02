@@ -77,4 +77,13 @@ public class StringUtilsTests {
 	public void testJoin() {
 		assertEquals("1,2,3,4", StringUtils.join(",", "1", "2", "3", "4"));
 	}
+
+	@Test
+	public void testEqualsIgnoreCase() {
+		assertTrue(equalsIgnoreCase(null, null));
+		assertFalse(equalsIgnoreCase(null, "aa"));
+		assertFalse(equalsIgnoreCase("bb", null));
+		assertFalse(equalsIgnoreCase("bb", "aa"));
+		assertTrue(equalsIgnoreCase("AAA", "aaa"));
+	}
 }

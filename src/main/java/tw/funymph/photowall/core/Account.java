@@ -28,9 +28,9 @@ public class Account {
 	 * @param password the hashed password 
 	 */
 	public Account(String identity, String nickname, String password) {
-		setIdentity(identity);
-		setNickname(nickname);
-		setPassword(password);
+		this.identity = identity;
+		this.nickname = nickname;
+		this.password = password;
 	}
 
 	/**
@@ -76,14 +76,5 @@ public class Account {
 	 */
 	public void setPassword(String value) {
 		password = value;
-	}
-
-	/**
-	 * Set the account's identity (this would be used by reflection tool).
-	 * 
-	 * @param value the identity
-	 */
-	private void setIdentity(String value) {
-		identity = value;
 	}
 }
