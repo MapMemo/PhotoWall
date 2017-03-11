@@ -37,4 +37,20 @@ public interface AccountManager {
 	 * @throws AccountManagerException if the identity and password does not match
 	 */
 	public Authentication login(String identity, String password) throws AccountManagerException;
+
+	/**
+	 * Use the token the find the authentication for logout.
+	 * 
+	 * @param token the authentication token
+	 * @throws AccountManagerException if any error occurred
+	 */
+	public void logout(String token) throws AccountManagerException;
+
+	/**
+	 * Check whether the token is valid or not.
+	 * 
+	 * @param token the token to check
+	 * @return the actual account if the token is valid; {@code null} if invalid
+	 */
+	public Account checkAccount(String token);
 }

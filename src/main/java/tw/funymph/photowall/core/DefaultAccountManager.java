@@ -73,7 +73,25 @@ public class DefaultAccountManager implements AccountManager {
 			return authentication;
 		}
 		catch (RepositoryException e) {
-			throw new AccountManagerException("unable to save authentication", e);
+			throw new AccountManagerException("unable to save the authentication", e);
 		}
+	}
+
+	@Override
+	public void logout(String token) throws AccountManagerException {
+		try {
+			authenticationRepository.delete(token);
+		} catch (RepositoryException e) {
+			throw new AccountManagerException("unable to remove the authentication", e);
+		}
+	}
+
+	@Override
+	public Account checkAccount(String token) {
+		Authentication authentication = authenticationRepository.get(token);
+		if (authentication != null) {
+			return accountRepository.get(authentication.getIdentity());
+		}
+		return null;
 	}
 }

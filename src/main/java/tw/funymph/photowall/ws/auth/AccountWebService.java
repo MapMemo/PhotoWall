@@ -9,7 +9,7 @@ package tw.funymph.photowall.ws.auth;
 import static java.lang.String.format;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Paths.get;
-import static spark.Spark.post;
+import static spark.Spark.*;
 import static tw.funymph.photowall.utils.IOUtils.copy;
 import static tw.funymph.photowall.utils.IOUtils.toMD5;
 import static tw.funymph.photowall.utils.StringUtils.assertNotBlank;
@@ -33,7 +33,7 @@ import tw.funymph.photowall.ws.SparkWebService;
 import tw.funymph.photowall.ws.WebServiceException;
 
 /**
- * This class handles the requests to <code>/ws/accounts/*</code>.
+ * This class handles the requests to <code>/ws/accounts/*</code> and <code>/ws/authentications/*</code>.
  * 
  * @author Spirit Tu
  * @version 1.0
@@ -58,6 +58,7 @@ public class AccountWebService implements SparkWebService {
 		post("/accounts", metaAware(this::register));
 		post("/me/portrait", metaAware(this::changePortrait));
 		post("/authentications", metaAware(this::login));
+		delete("/authentications/mine", metaAware(this::logout));
 	}
 
 	/**
@@ -99,6 +100,12 @@ public class AccountWebService implements SparkWebService {
 		}
 		Authentication authentication = accountManager.login(credentials[0], credentials[1]);
 		response.header(AuthToken, authentication.getToken());
+		return null;
+	}
+
+	public Object logout(Request request, Response response) throws Exception {
+		String token = request.headers(AuthToken);
+		accountManager.logout(token);
 		return null;
 	}
 
