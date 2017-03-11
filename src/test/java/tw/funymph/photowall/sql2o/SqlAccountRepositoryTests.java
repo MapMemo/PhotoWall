@@ -40,18 +40,20 @@ public class SqlAccountRepositoryTests extends AbstractSqlRepositoryTestCase {
 
 	@Test
 	public void testSave() throws Exception {
-		assertNull(testee.get("aaa@bbb.com"));
+		assertNull(testee.findByEmail("aaa@bbb.com"));
 		Account account = new Account("aaa@bbb.com", "AAA", "cccc");
+		String id = account.getId();
 		testee.save(account);
 
-		Account saved = testee.get("aaa@bbb.com");
+		Account saved = testee.findByEmail("aaa@bbb.com");
 		assertEquals("AAA", saved.getNickname());
 		assertEquals("cccc", saved.getPassword());
+		assertEquals(id, saved.getId());
 	}
 
 	@Test
 	public void testSaveDuplicated() throws Exception {
-		assertNull(testee.get("aaa@bbb.com"));
+		assertNull(testee.findByEmail("aaa@bbb.com"));
 		Account account = new Account("aaa@bbb.com", "AAA", "cccc");
 		testee.save(account);
 		try {

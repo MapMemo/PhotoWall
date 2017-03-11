@@ -8,16 +8,13 @@ package tw.funymph.photowall;
 
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
-import static spark.Spark.init;
-import static spark.Spark.notFound;
-import static spark.Spark.path;
-import static spark.Spark.webSocket;
-import static tw.funymph.photowall.ws.HttpHeaders.AuthToken;
+import static spark.Spark.*;
 import static tw.funymph.photowall.ws.HttpStatusCodes.NotFound;
 import static tw.funymph.photowall.ws.SparkWebService.enableCORS;
 import static tw.funymph.photowall.ws.SparkWebService.wrapException;
 import static tw.funymph.photowall.wss.WebSocketEventHandler.EventPath;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -26,7 +23,6 @@ import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.sql2o.Sql2o;
 
-import spark.Request;
 import tw.funymph.photowall.core.AccountManager;
 import tw.funymph.photowall.core.DefaultAccountManager;
 import tw.funymph.photowall.sql2o.SqlAccountRepository;
@@ -75,6 +71,7 @@ public class PhotoWall {
 		DataSource dataSource = setUpDatabase(properties);
 		sql2o = new Sql2o(dataSource);
 		webSocket(EventPath, WebSocketEventHandler.class);
+		staticFiles.externalLocation(new File("files").getAbsolutePath());
 		notFound((request, response) -> {
 			return wrapException(response, currentTimeMillis(), new WebServiceException(NotFound, -1, format("no action for %s %s", request.requestMethod(), request.pathInfo())));
 		});
@@ -83,10 +80,6 @@ public class PhotoWall {
 		path("/ws", () -> {
 			new AccountWebService(sharedInstance().getAccountManager()).routes();
 		});
-	}
-
-	public static boolean authenticated(Request request) {
-		return sharedInstance().getAccountManager().checkAccount(request.headers(AuthToken)) != null;
 	}
 
 	/**

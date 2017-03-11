@@ -86,4 +86,12 @@ public class StringUtilsTests {
 		assertFalse(equalsIgnoreCase("bb", "aa"));
 		assertTrue(equalsIgnoreCase("AAA", "aaa"));
 	}
+
+	@Test
+	public void testGetExtension() {
+		assertNull(getExtension("abc"));
+		assertEquals("png", getExtension("abc.png"));
+		assertEquals("png", getExtension("abc.123.png"));
+		assertEquals("png", getExtension(".abc.png"));
+	}
 }

@@ -53,4 +53,19 @@ public interface AccountManager {
 	 * @return the actual account if the token is valid; {@code null} if invalid
 	 */
 	public Account checkAccount(String token);
+
+	/**
+	 * Get account specified by the ID.
+	 * 
+	 * @param id the account ID
+	 * @return the specified account; {@code null} if the account does not exist
+	 */
+	public Account getAccount(String id);
+
+	/**
+	 * Get all accounts.
+	 * 
+	 * @return all accounts
+	 */
+	public Account[] getAll();
 }

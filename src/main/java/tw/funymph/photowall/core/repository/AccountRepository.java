@@ -19,12 +19,27 @@ import tw.funymph.photowall.core.Account;
 public interface AccountRepository {
 
 	/**
-	 * Get the account instance specified by the identity.
+	 * Get the account instance specified by the email.
 	 * 
-	 * @param identity the account identity
+	 * @param email the account email
 	 * @return the account instance; {@code null} if not found
 	 */
-	public Account get(String identity);
+	public Account findByEmail(String email);
+
+	/**
+	 * Get the account instance specified by the ID.
+	 * 
+	 * @param id the account ID
+	 * @return the account instance; {@code null} if not found 
+	 */
+	public Account get(String id);
+
+	/**
+	 * Get all accounts.
+	 * 
+	 * @return all accounts
+	 */
+	public Account[] getAll();
 
 	/**
 	 * Save the account instance.

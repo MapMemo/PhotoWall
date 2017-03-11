@@ -10,6 +10,7 @@ import static java.lang.String.valueOf;
 import static spark.Spark.before;
 import static spark.Spark.options;
 import static java.lang.System.currentTimeMillis;
+import static tw.funymph.photowall.PhotoWall.sharedInstance;
 import static tw.funymph.photowall.utils.JsonUtils.toJson;
 import static tw.funymph.photowall.utils.MapUtils.asMap;
 import static tw.funymph.photowall.utils.MapUtils.notEmpty;
@@ -22,6 +23,7 @@ import java.util.function.Predicate;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import tw.funymph.photowall.core.Account;
 
 /**
  * This interface provides the default methods for most common utilities.
@@ -35,10 +37,23 @@ public interface SparkWebService extends HttpMethods, HttpStatusCodes, HttpHeade
 	public static final String[] DefaultAllowMethods = { Get, Delete, Put, Post, Options };
 	public static final String[] DefaultAllowHeaders = { Authorization, AuthToken, Accept, AcceptCharset, AcceptEncoding, AcceptLanguage, AcceptDatetime, ContentType, ContentDisposition };
 
+	/**
+	 * Enable the CORS (Cross-Origin Resource Sharing) for Web applications with the
+	 * default allowed methods and headers.
+	 */
 	public static void enableCORS() {
 		enableCORS("*", DefaultAllowMethods, DefaultAllowHeaders);
 	}
 
+	/**
+	 * Enable the CORS (Cross-Origin Resource Sharing) for Web applications with the
+	 * allowed methods and headers. For more detail, please see
+	 * <a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS on wikipedia</a>.
+	 * 
+	 * @param origin the origin
+	 * @param methods the methods to allow
+	 * @param headers the headers to allow
+	 */
 	public static void enableCORS(final String origin, final String[] methods, final String[] headers) {
 		options("/*", (request, response) -> {
 			String accessControlRequestHeaders = request.headers(AccessControlRequestHeaders);
@@ -58,6 +73,26 @@ public interface SparkWebService extends HttpMethods, HttpStatusCodes, HttpHeade
 			response.header(AccessControlRequestMethod, join(", ", methods));
 			response.header(AccessControlAllowHeaders, join(", ", headers));
 		});
+	}
+
+	/**
+	 * A predicate to check whether the request has the valid token.
+	 * 
+	 * @param request the request to check
+	 * @return {@code true} if the request has valid token
+	 */
+	public default Route validToken(Route route) {
+		return authenticate(route, (req) -> authenticatedAccount(req) != null);
+	}
+
+	/**
+	 * Get the authenticated account from the information in the specific request's header.
+	 * 
+	 * @param request the request
+	 * @return the authenticated account; {@code null} if no valid account is available
+	 */
+	public default Account authenticatedAccount(Request request) {
+		return sharedInstance().getAccountManager().checkAccount(request.headers(AuthToken));
 	}
 
 	/**
@@ -87,18 +122,6 @@ public interface SparkWebService extends HttpMethods, HttpStatusCodes, HttpHeade
 				return wrapException(response, timestamp, new WebServiceException(e));
 			}
 		};
-	}
-
-	public static Object wrapException(Response response, long timestamp, WebServiceException e) {
-		response.type(ApplicationJson);
-		response.status(e.getStatusCode());
-		response.header(Elapsed, valueOf((currentTimeMillis() - timestamp)));
-		Map<String, Object> error = asMap("code", e.getErrorCode());
-		error.put("message", e.getMessage());
-		if (notEmpty(e.getInfo())) {
-			error.put("info", e.getInfo());
-		}
-		return toJson(asMap("error", error));
 	}
 
 	/**
@@ -139,6 +162,26 @@ public interface SparkWebService extends HttpMethods, HttpStatusCodes, HttpHeade
 			}
 			return route.handle(request, response);
 		};
+	}
+
+	/**
+	 * Wrap the thrown exception as the response object.
+	 * 
+	 * @param response the response
+	 * @param timestamp the request timestamp
+	 * @param e the thrown exception
+	 * @return the response object
+	 */
+	static Object wrapException(Response response, long timestamp, WebServiceException e) {
+		response.type(ApplicationJson);
+		response.status(e.getStatusCode());
+		response.header(Elapsed, valueOf((currentTimeMillis() - timestamp)));
+		Map<String, Object> error = asMap("code", e.getErrorCode());
+		error.put("message", e.getMessage());
+		if (notEmpty(e.getInfo())) {
+			error.put("info", e.getInfo());
+		}
+		return toJson(asMap("error", error));
 	}
 
 	/**
