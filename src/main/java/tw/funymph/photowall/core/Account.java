@@ -6,6 +6,8 @@
  */
 package tw.funymph.photowall.core;
 
+import static java.util.UUID.randomUUID;
+
 /**
  * This class represents an account in the system.
  * 
@@ -15,31 +17,42 @@ package tw.funymph.photowall.core;
  */
 public class Account {
 
-	private String identity;
+	private String id;
+	private String email;
 	private String nickname;
 	private String password;
 
 	/**
-	 * Construct a <code>Account</code> instance with the identity, nickname,
-	 * and hashed password.
+	 * Construct a <code>Account</code> instance with the email,
+	 * nickname, and hashed password.
 	 * 
 	 * @param identity the account identity
-	 * @param nickname the nickname
+	 * @param email the nickname
 	 * @param password the hashed password 
 	 */
-	public Account(String identity, String nickname, String password) {
-		this.identity = identity;
-		this.nickname = nickname;
+	public Account(String identity, String email, String password) {
+		this.id = randomUUID().toString();
+		this.email = identity;
+		this.nickname = email;
 		this.password = password;
 	}
 
 	/**
-	 * Get the account's identity.
+	 * Get the system generated ID.
+	 * 
+	 * @return the system generated ID
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
+	 * Get the account's email.
 	 * 
 	 * @return the identity
 	 */
-	public String getIdentity() {
-		return identity;
+	public String getEmail() {
+		return email;
 	}
 
 	/**

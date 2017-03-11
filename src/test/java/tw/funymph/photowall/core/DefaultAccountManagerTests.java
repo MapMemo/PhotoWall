@@ -51,7 +51,7 @@ public class DefaultAccountManagerTests {
 	@Test
 	public void testRegisterButIdentityAlreadyUsed() throws Exception {
 		Account account = new Account("aaa@bbb.com", "aaa", "thisispassword");
-		when(repository.get("aaa@bbb.com")).thenReturn(account);
+		when(repository.findByEmail("aaa@bbb.com")).thenReturn(account);
 		try {
 			testee.register("aaa@bbb.com", "aaa", "thisispassword");
 			fail("an account manager exception should be thrown");
@@ -65,7 +65,7 @@ public class DefaultAccountManagerTests {
 	@Test
 	public void testRegister() throws Exception {
 		Account account = testee.register("aaa@bbb.com", "aaa", "thisispassword");
-		assertEquals("aaa@bbb.com", account.getIdentity());
+		assertEquals("aaa@bbb.com", account.getEmail());
 		assertEquals("aaa", account.getNickname());
 
 		// the password should be encoded

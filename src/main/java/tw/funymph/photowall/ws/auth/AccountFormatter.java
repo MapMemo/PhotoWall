@@ -19,7 +19,7 @@ import tw.funymph.photowall.utils.MapUtils;
 public interface AccountFormatter {
 
 	public static Map<String, Object> publicInfo(Account account) {
-		Map<String, Object> info = MapUtils.asMap("identity", account.getIdentity());
+		Map<String, Object> info = MapUtils.asMap("id", account.getId());
 		info.put("nickname", account.getNickname());
 		return info;
 	}

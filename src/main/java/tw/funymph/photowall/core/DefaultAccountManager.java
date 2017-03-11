@@ -42,7 +42,7 @@ public class DefaultAccountManager implements AccountManager {
 		assertNotBlank(identity, "the identity can not be blank");
 		assertNotBlank(nickname, "the nickname can not be blank");
 		assertNotBlank(password, "the password can not be blank");
-		Account account = accountRepository.get(identity);
+		Account account = accountRepository.findByEmail(identity);
 		if (account != null) {
 			throw new AccountManagerException("the identity has already been used");
 		}
@@ -60,7 +60,7 @@ public class DefaultAccountManager implements AccountManager {
 	public Authentication login(String identity, String password) throws AccountManagerException {
 		assertNotBlank(identity, "the identity can not be blank");
 		assertNotBlank(password, "the password can not be blank");
-		Account account = accountRepository.get(identity);
+		Account account = accountRepository.findByEmail(identity);
 		if (account == null) {
 			throw new AccountManagerException("the identity does not exist");
 		}
@@ -73,7 +73,35 @@ public class DefaultAccountManager implements AccountManager {
 			return authentication;
 		}
 		catch (RepositoryException e) {
-			throw new AccountManagerException("unable to save authentication", e);
+			throw new AccountManagerException("unable to save the authentication", e);
 		}
+	}
+
+	@Override
+	public void logout(String token) throws AccountManagerException {
+		try {
+			authenticationRepository.delete(token);
+		} catch (RepositoryException e) {
+			throw new AccountManagerException("unable to remove the authentication", e);
+		}
+	}
+
+	@Override
+	public Account checkAccount(String token) {
+		Authentication authentication = authenticationRepository.get(token);
+		if (authentication != null) {
+			return accountRepository.findByEmail(authentication.getIdentity());
+		}
+		return null;
+	}
+
+	@Override
+	public Account getAccount(String id) {
+		return accountRepository.get(id);
+	}
+
+	@Override
+	public Account[] getAll() {
+		return accountRepository.getAll();
 	}
 }

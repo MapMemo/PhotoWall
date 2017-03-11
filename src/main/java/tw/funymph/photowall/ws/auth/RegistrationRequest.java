@@ -18,15 +18,15 @@ import tw.funymph.photowall.ws.WebServiceException;
  */
 public class RegistrationRequest {
 
-	private String identity;
+	private String email;
 	private String nickname;
 	private String password;
 
 	/**
-	 * @return the identity
+	 * @return the email
 	 */
-	public String getIdentity() {
-		return identity;
+	public String getEamil() {
+		return email;
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class RegistrationRequest {
 	}
 
 	public void validate() throws WebServiceException {
-		if (isBlank(identity) || isBlank(nickname) || isBlank(password)) {
+		if (isBlank(email) || isBlank(nickname) || isBlank(password)) {
 			throw new WebServiceException(BadRequest, -1, "invalid request format");
 		}
 	}

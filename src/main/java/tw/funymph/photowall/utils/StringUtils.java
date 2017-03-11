@@ -118,6 +118,13 @@ public interface StringUtils {
 		return stream(strings).reduce((s1, s2) -> format("%s%s%s", s1, separator, s2)).get();
 	}
 
+	/**
+	 * Check the given two strings are equal or not in the case ignoring case.
+	 * 
+	 * @param string1 the first string
+	 * @param string2 the second string
+	 * @return {@code true} if the two strings are equal
+	 */
 	public static boolean equalsIgnoreCase(String string1, String string2) {
 		if (string1 == null && string2 == null) {
 			return true;
@@ -126,5 +133,16 @@ public interface StringUtils {
 			return string1.compareToIgnoreCase(string2) == 0;
 		}
 		return false;
+	}
+
+	/**
+	 * Get the extension part of the filename.
+	 * 
+	 * @param filename the filename
+	 * @return the extension part; {@code null} if no extension part
+	 */
+	public static String getExtension(String filename) {
+		int index = filename.lastIndexOf(".");
+		return index > 0 ? filename.substring(index + 1) : null;
 	}
 }

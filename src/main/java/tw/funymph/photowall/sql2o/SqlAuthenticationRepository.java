@@ -61,4 +61,13 @@ public class SqlAuthenticationRepository implements AuthenticationRepository {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 	}
+
+	@Override
+	public void delete(String token) throws RepositoryException {
+		try (Connection connection = sql2o.beginTransaction()) {
+			connection.createQuery("delete from AUTHENTICATION where TOKEN=:token")
+				.addParameter("token", token)
+				.executeUpdate();
+		}
+	}
 }

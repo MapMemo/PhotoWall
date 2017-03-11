@@ -14,6 +14,7 @@ import static tw.funymph.photowall.ws.SparkWebService.enableCORS;
 import static tw.funymph.photowall.ws.SparkWebService.wrapException;
 import static tw.funymph.photowall.wss.WebSocketEventHandler.EventPath;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -70,6 +71,7 @@ public class PhotoWall {
 		DataSource dataSource = setUpDatabase(properties);
 		sql2o = new Sql2o(dataSource);
 		webSocket(EventPath, WebSocketEventHandler.class);
+		staticFiles.externalLocation(new File("files").getAbsolutePath());
 		notFound((request, response) -> {
 			return wrapException(response, currentTimeMillis(), new WebServiceException(NotFound, -1, format("no action for %s %s", request.requestMethod(), request.pathInfo())));
 		});
