@@ -8,7 +8,6 @@ package tw.funymph.photowall.ws.auth;
 
 import static java.lang.String.format;
 import static java.nio.file.Files.createDirectories;
-import static java.nio.file.Paths.get;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static spark.Spark.*;
@@ -20,6 +19,7 @@ import static tw.funymph.photowall.ws.auth.AccountFormatter.publicInfo;
 
 import java.io.FileOutputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -131,7 +131,7 @@ public class AccountWebService implements SparkWebService {
 			throw new WebServiceException(NotAcceptable, -1, format("the content type must be %s", BinaryOctetStream));
 		}
 		Account account = authenticatedAccount(request);
-		Path path = get("files", "portraits", account.getId());
+		Path path = Paths.get("files", "portraits", account.getId());
 		createDirectories(path.getParent());
 		copy(request.raw().getInputStream(), new FileOutputStream(path.toFile()));
 		response.header(ETag, toMD5(path.toFile()));
