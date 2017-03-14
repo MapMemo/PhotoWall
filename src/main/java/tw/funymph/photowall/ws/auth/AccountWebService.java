@@ -7,19 +7,17 @@
 package tw.funymph.photowall.ws.auth;
 
 import static java.lang.String.format;
-import static java.nio.file.Files.createDirectories;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static spark.Spark.*;
-import static tw.funymph.photowall.utils.IOUtils.copy;
 import static tw.funymph.photowall.utils.IOUtils.toMD5;
+import static tw.funymph.photowall.utils.JsonUtils.toObject;
+import static tw.funymph.photowall.utils.MapUtils.getString;
 import static tw.funymph.photowall.utils.StringUtils.assertNotBlank;
-import static tw.funymph.photowall.utils.StringUtils.equalsIgnoreCase;
 import static tw.funymph.photowall.ws.auth.AccountFormatter.publicInfo;
 
-import java.io.FileOutputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -63,6 +61,7 @@ public class AccountWebService implements SparkWebService {
 		get("/portraits/:id", metaAware(this::getPortrait));
 		get("/profiles/:id", metaAware(validToken(this::getAccount)));
 		get("/profiles", metaAware(validToken(this::getAccounts)));
+		put("/profiles/mine", metaAware(validToken(this::editProfile)));
 		delete("/authentications/mine", metaAware(this::logout));
 	}
 
@@ -127,15 +126,20 @@ public class AccountWebService implements SparkWebService {
 	 * @throws Exception if any error occurred
 	 */
 	public Object changePortrait(Request request, Response response) throws Exception {
-		if (!equalsIgnoreCase(BinaryOctetStream, request.headers(ContentType))) {
-			throw new WebServiceException(NotAcceptable, -1, format("the content type must be %s", BinaryOctetStream));
-		}
+		assertBinaryOctetStream(request);
 		Account account = authenticatedAccount(request);
-		Path path = Paths.get("files", "portraits", account.getId());
-		createDirectories(path.getParent());
-		copy(request.raw().getInputStream(), new FileOutputStream(path.toFile()));
+		Path path = saveFile(request, "portraits", account.getId());
 		response.header(ETag, toMD5(path.toFile()));
 		return null;
+	}
+
+	public Object editProfile(Request request, Response response) throws Exception {
+		Account account = authenticatedAccount(request);
+		Map<String, Object> requestBody = toObject(request.body());
+		if (getString(requestBody, "nickname") != null) {
+			account = accountManager.changeNickname(account.getId(), getString(requestBody, "nickname"));
+		}
+		return publicInfo(account);
 	}
 
 	public Object getPortrait(Request request, Response response) throws Exception {

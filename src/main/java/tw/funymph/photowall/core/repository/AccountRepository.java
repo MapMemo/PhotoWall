@@ -48,4 +48,12 @@ public interface AccountRepository {
 	 * @throws RepositoryException if any error occurred
 	 */
 	public void save(Account account) throws RepositoryException;
+
+	/**
+	 * Save the account instance.
+	 * 
+	 * @param account the account to save
+	 * @throws RepositoryException if any error occurred
+	 */
+	public void update(Account account) throws RepositoryException;
 }

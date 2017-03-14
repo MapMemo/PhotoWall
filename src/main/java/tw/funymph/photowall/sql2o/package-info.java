@@ -6,6 +6,9 @@
  */
 
 /**
+ * This package contains the implementation of repositories
+ * with the Sql2o technology.
+ * 
  * @author Spirit Tu
  * @version 1.0
  * @since 1.0

@@ -26,14 +26,14 @@ public class Account {
 	 * Construct a <code>Account</code> instance with the email,
 	 * nickname, and hashed password.
 	 * 
-	 * @param identity the account identity
-	 * @param email the nickname
+	 * @param email the account identity
+	 * @param nickname the nickname
 	 * @param password the hashed password 
 	 */
-	public Account(String identity, String email, String password) {
+	public Account(String email, String nickname, String password) {
 		this.id = randomUUID().toString();
-		this.email = identity;
-		this.nickname = email;
+		this.email = email;
+		this.nickname = nickname;
 		this.password = password;
 	}
 

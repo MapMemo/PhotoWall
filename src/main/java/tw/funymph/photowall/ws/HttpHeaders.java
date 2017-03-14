@@ -52,7 +52,9 @@ public interface HttpHeaders {
 
 	// Custom non-standard HTTPs
 	public static final String Elapsed = "Elapsed";
+	public static final String Geolocation = "Geolocation";
 	public static final String Timestamp = "Timestamp";
+	public static final String Placemark = "Placemark";
 
 	/**
 	 * Get the filename from disposition content of HTTP header

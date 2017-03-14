@@ -92,4 +92,18 @@ public class SqlAccountRepository implements AccountRepository {
 			throw new RepositoryException(e.getMessage(), e);
 		}
 	}
+
+	@Override
+	public void update(Account account) throws RepositoryException {
+		try (Connection connection = sql2o.beginTransaction()) {
+			connection.createQuery("update ACCOUNT set NICKNAME = :nickname where ID = :id")
+				.addParameter("id", account.getId())
+				.addParameter("nickname", account.getNickname())
+				.executeUpdate();
+			connection.commit();
+		}
+		catch (Sql2oException e) {
+			throw new RepositoryException(e.getMessage(), e);
+		}
+	}
 }
