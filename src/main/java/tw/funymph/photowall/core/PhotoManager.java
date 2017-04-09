@@ -15,7 +15,7 @@ public interface PhotoManager {
 
 	public Photo[] getNearbyPhotos(double latitude, double longitude, double distance);
 
-	public Photo[] getPhotos(Long before, Long after);
+	public Photo[] getPhotos(Long before, Long after, String posterId);
 
 	public Photo addPhoto(String posterId, String photoId, long timestamp, Location location);
 }

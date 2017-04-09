@@ -17,7 +17,7 @@ public interface PhotoRepository {
 
 	public Photo[] getNearbyPhotos(double latitude, double longitude, double distance);
 
-	public Photo[] getPhotos(Long before, Long after);
+	public Photo[] getPhotos(Long before, Long after, String posterId);
 
 	public void save(Photo photo) throws RepositoryException;
 }

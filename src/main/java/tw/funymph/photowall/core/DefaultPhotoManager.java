@@ -38,8 +38,8 @@ public class DefaultPhotoManager implements PhotoManager {
 	}
 
 	@Override
-	public Photo[] getPhotos(Long before, Long after) {
-		return repository.getPhotos(before, after);
+	public Photo[] getPhotos(Long before, Long after, String posterId) {
+		return repository.getPhotos(before, after, posterId);
 	}
 
 	@Override

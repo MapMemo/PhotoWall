@@ -90,7 +90,7 @@ public class DefaultAccountManager implements AccountManager {
 	public Account checkAccount(String token) {
 		Authentication authentication = authenticationRepository.get(token);
 		if (authentication != null) {
-			return accountRepository.findByEmail(authentication.getIdentity());
+			return accountRepository.get(authentication.getIdentity());
 		}
 		return null;
 	}

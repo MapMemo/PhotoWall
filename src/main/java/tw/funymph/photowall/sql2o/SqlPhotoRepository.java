@@ -12,11 +12,14 @@ import static java.util.stream.Collectors.toList;
 import static tw.funymph.photowall.utils.MapUtils.getDouble;
 import static tw.funymph.photowall.utils.MapUtils.getLong;
 import static tw.funymph.photowall.utils.MapUtils.getString;
+import static tw.funymph.photowall.utils.StringUtils.join;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.sql2o.Connection;
+import org.sql2o.Query;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 
@@ -39,27 +42,40 @@ public class SqlPhotoRepository implements PhotoRepository {
 	}
 
 	@Override
-	public Photo[] getPhotos(Long before, Long after) {
+	public Photo[] getPhotos(Long before, Long after, String posterId) {
 		List<Photo> result = emptyList();
+		List<String> conditions = new ArrayList<>();
+		addConditions(conditions, "<= :before", "TIMESTAMP", before);
+		addConditions(conditions, ">= :after", "TIMESTAMP", after);
+		addConditions(conditions, "= :posterId", "POSTER", posterId);
 		String statement = "select * from PHOTO";
-		if (before != null && after != null) {
-			statement += format(" where TIMESTAMP <= %d and TIMESTAMP >= %d", before, after);
-		}
-		else if (before != null) {
-			statement += format(" where TIMESTAMP <= %d", before);
-		}
-		else if (after != null) {
-			statement += format(" where TIMESTAMP >= %d", after);
+		if (conditions.size() > 0) {
+			statement += format(" where %s order by TIMESTAMP", join(" and ", conditions.toArray(new String[0])));
 		}
 		try (Connection connection = sql2o.open()) {
-			result = connection.createQuery(statement)
-				.executeAndFetchTable()
+			Query query = connection.createQuery(statement);
+			if (before != null) {
+				query.addParameter("before", before);
+			}
+			if (after != null) {
+				query.addParameter("after", after);
+			}
+			if (posterId != null) {
+				query.addParameter("posterId", posterId);
+			}
+			result = query.executeAndFetchTable()
 				.asList()
 				.stream()
 				.map(this::toPhoto)
 				.collect(toList());
 		}
 		return result.toArray(new Photo[0]);
+	}
+
+	private void addConditions(List<String> conditions, String operator, String column, Object value) {
+		if (value != null) {
+			conditions.add(format("%s %s", column, operator));
+		}
 	}
 
 	@Override

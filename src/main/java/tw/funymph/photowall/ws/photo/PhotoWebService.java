@@ -51,7 +51,8 @@ public class PhotoWebService implements SparkWebService {
 	public Object getPhotos(Request request, Response response) throws Exception {
 		Long before = (request.queryParams("before") != null) ? parseLong(request.queryParams("before")) : null;
 		Long after = (request.queryParams("after") != null) ? parseLong(request.queryParams("after")) : null;
-		return photoManager.getPhotos(before, after);
+		String posterId = request.queryParams("poster");
+		return photoManager.getPhotos(before, after, posterId);
 	}
 
 	public Object getNearbyPhotos(Request request, Response response) throws Exception {
@@ -69,7 +70,6 @@ public class PhotoWebService implements SparkWebService {
 	}
 
 	public Object uploadPhoto(Request request, Response response) throws Exception {
-		assertBinaryOctetStream(request);
 		String posterId = authenticatedAccount(request).getId();
 		Location location = parseLocation(request);
 		long timestamp = currentTimeMillis();

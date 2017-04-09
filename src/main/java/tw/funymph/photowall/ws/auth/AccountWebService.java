@@ -56,7 +56,7 @@ public class AccountWebService implements SparkWebService {
 	@Override
 	public void routes() {
 		post("/accounts", metaAware(this::register));
-		post("/me/portrait", metaAware(validToken(this::changePortrait)));
+		post("/portraits/mine", metaAware(validToken(this::changePortrait)));
 		post("/authentications", metaAware(this::login));
 		get("/portraits/:id", metaAware(this::getPortrait));
 		get("/profiles/:id", metaAware(validToken(this::getAccount)));
@@ -126,7 +126,6 @@ public class AccountWebService implements SparkWebService {
 	 * @throws Exception if any error occurred
 	 */
 	public Object changePortrait(Request request, Response response) throws Exception {
-		assertBinaryOctetStream(request);
 		Account account = authenticatedAccount(request);
 		Path path = saveFile(request, "portraits", account.getId());
 		response.header(ETag, toMD5(path.toFile()));
