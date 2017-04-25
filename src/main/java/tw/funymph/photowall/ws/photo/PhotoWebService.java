@@ -8,11 +8,13 @@ package tw.funymph.photowall.ws.photo;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Long.parseLong;
+import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static java.util.UUID.randomUUID;
 import static java.util.regex.Pattern.compile;
 import static spark.Spark.get;
 import static spark.Spark.post;
+import static tw.funymph.photowall.utils.StringUtils.assertNotBlank;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +47,15 @@ public class PhotoWebService implements SparkWebService {
 	public void routes() {
 		post("/photos", metaAware(validToken(this::uploadPhoto)));
 		get("/photos", metaAware(validToken(this::getPhotos)));
+		get("/photos/:id", metaAware(this::getPhoto));
 		get("/photos/nearby", metaAware(validToken(this::getNearbyPhotos)));
+	}
+
+	public Object getPhoto(Request request, Response response) throws Exception {
+		String id = request.params("id");
+		assertNotBlank(id, "the id is not specified");
+		response.redirect(format("/photos/%s", id));
+		return null;
 	}
 
 	public Object getPhotos(Request request, Response response) throws Exception {
