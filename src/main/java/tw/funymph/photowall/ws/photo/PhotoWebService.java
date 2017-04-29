@@ -10,15 +10,19 @@ import static java.lang.Double.parseDouble;
 import static java.lang.Long.parseLong;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
+import static java.nio.file.Files.createDirectories;
 import static java.util.UUID.randomUUID;
 import static java.util.regex.Pattern.compile;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static tw.funymph.photowall.utils.StringUtils.assertNotBlank;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.coobird.thumbnailator.Thumbnails;
 import spark.Request;
 import spark.Response;
 import tw.funymph.photowall.core.Location;
@@ -48,6 +52,7 @@ public class PhotoWebService implements SparkWebService {
 		post("/photos", metaAware(validToken(this::uploadPhoto)));
 		get("/photos", metaAware(validToken(this::getPhotos)));
 		get("/photos/:id", metaAware(this::getPhoto));
+		get("/photos/:id/thumbnail", metaAware(this::getPhotoThumbnail));
 		get("/photos/nearby", metaAware(validToken(this::getNearbyPhotos)));
 	}
 
@@ -55,6 +60,13 @@ public class PhotoWebService implements SparkWebService {
 		String id = request.params("id");
 		assertNotBlank(id, "the id is not specified");
 		response.redirect(format("/photos/%s", id));
+		return null;
+	}
+
+	public Object getPhotoThumbnail(Request request, Response response) throws Exception {
+		String id = request.params("id");
+		assertNotBlank(id, "the id is not specified");
+		response.redirect(format("/thumbnails/%s.jpg", id));
 		return null;
 	}
 
@@ -84,7 +96,13 @@ public class PhotoWebService implements SparkWebService {
 		Location location = parseLocation(request);
 		long timestamp = currentTimeMillis();
 		String photoId = randomUUID().toString();
-		saveFile(request, "photos", photoId);
+		Path thumbnailPath = Paths.get("files", "thumbnails", photoId);
+		createDirectories(thumbnailPath.getParent());
+		Path savedPhoto = saveFile(request, "photos", photoId);
+		Thumbnails.of(savedPhoto.toFile())
+			.size(270, 270)
+			.outputFormat("jpg")
+			.toFile(thumbnailPath.toFile());
 		Photo photo = photoManager.addPhoto(posterId, photoId, timestamp, location);
 		return photo;
 	}
