@@ -6,17 +6,23 @@
  */
 package tw.funymph.photowall.ws;
 
+import static java.lang.String.format;
 import static java.lang.String.valueOf;
 import static spark.Spark.before;
 import static spark.Spark.options;
 import static java.lang.System.currentTimeMillis;
+import static java.nio.file.Files.createDirectories;
 import static tw.funymph.photowall.PhotoWall.sharedInstance;
+import static tw.funymph.photowall.utils.IOUtils.copy;
 import static tw.funymph.photowall.utils.JsonUtils.toJson;
 import static tw.funymph.photowall.utils.MapUtils.asMap;
 import static tw.funymph.photowall.utils.MapUtils.notEmpty;
 import static tw.funymph.photowall.utils.StringUtils.equalsIgnoreCase;
 import static tw.funymph.photowall.utils.StringUtils.join;
 
+import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -162,6 +168,19 @@ public interface SparkWebService extends HttpMethods, HttpStatusCodes, HttpHeade
 			}
 			return route.handle(request, response);
 		};
+	}
+
+	public default Path saveFile(Request request, String... paths) throws Exception {
+		Path path = Paths.get("files", paths);
+		createDirectories(path.getParent());
+		copy(request.raw().getInputStream(), new FileOutputStream(path.toFile()));
+		return path;
+	}
+
+	public default void assertBinaryOctetStream(Request request) throws Exception {
+		if (!equalsIgnoreCase(BinaryOctetStream, request.headers(ContentType))) {
+			throw new WebServiceException(NotAcceptable, -1, format("the content type must be %s", BinaryOctetStream));
+		}
 	}
 
 	/**

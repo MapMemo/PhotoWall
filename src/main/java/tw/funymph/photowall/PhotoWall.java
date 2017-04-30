@@ -25,10 +25,14 @@ import org.sql2o.Sql2o;
 
 import tw.funymph.photowall.core.AccountManager;
 import tw.funymph.photowall.core.DefaultAccountManager;
+import tw.funymph.photowall.core.DefaultPhotoManager;
+import tw.funymph.photowall.core.PhotoManager;
 import tw.funymph.photowall.sql2o.SqlAccountRepository;
 import tw.funymph.photowall.sql2o.SqlAuthenticationRepository;
+import tw.funymph.photowall.sql2o.SqlPhotoRepository;
 import tw.funymph.photowall.ws.WebServiceException;
 import tw.funymph.photowall.ws.auth.AccountWebService;
+import tw.funymph.photowall.ws.photo.PhotoWebService;
 import tw.funymph.photowall.wss.WebSocketEventHandler;
 
 /**
@@ -46,6 +50,7 @@ public class PhotoWall {
 	private static PhotoWall instance;
 	private static Sql2o sql2o;
 
+	private PhotoManager photoManager;
 	private AccountManager accountManager;
 
 	/**
@@ -79,6 +84,7 @@ public class PhotoWall {
 		enableCORS();
 		path("/ws", () -> {
 			new AccountWebService(sharedInstance().getAccountManager()).routes();
+			new PhotoWebService(sharedInstance().getPhotoManager()).routes();
 		});
 	}
 
@@ -88,7 +94,12 @@ public class PhotoWall {
 	 * instance.
 	 */
 	private PhotoWall() {
+		photoManager = new DefaultPhotoManager(new SqlPhotoRepository(sql2o));
 		accountManager = new DefaultAccountManager(new SqlAccountRepository(sql2o), new SqlAuthenticationRepository(sql2o));
+	}
+
+	public PhotoManager getPhotoManager() {
+		return photoManager;
 	}
 
 	/**

@@ -62,6 +62,8 @@ public interface AccountManager {
 	 */
 	public Account getAccount(String id);
 
+	public Account changeNickname(String id, String nickname) throws AccountManagerException;
+
 	/**
 	 * Get all accounts.
 	 * 
