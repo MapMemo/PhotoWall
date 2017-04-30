@@ -6,6 +6,7 @@
  */
 package tw.funymph.photowall.sql2o;
 
+import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -35,6 +36,8 @@ import tw.funymph.photowall.core.repository.RepositoryException;
  */
 public class SqlPhotoRepository implements PhotoRepository {
 
+	private static final int MaximumRows = 40;
+
 	private Sql2o sql2o;
 
 	public SqlPhotoRepository(Sql2o sql2o) {
@@ -63,8 +66,9 @@ public class SqlPhotoRepository implements PhotoRepository {
 			if (posterId != null) {
 				query.addParameter("posterId", posterId);
 			}
-			result = query.executeAndFetchTable()
-				.asList()
+			List<Map<String, Object>> rows = query.executeAndFetchTable().asList();
+			int size = min(rows.size(), MaximumRows);
+			result = rows.subList(0, size)
 				.stream()
 				.map(this::toPhoto)
 				.collect(toList());
@@ -84,13 +88,14 @@ public class SqlPhotoRepository implements PhotoRepository {
 		String statement = "select * from PHOTO where LATITUDE between :minLat and :maxLat and LONGITUDE between :minLong and :maxLong";
 		List<Photo> result = emptyList();
 		try (Connection connection = sql2o.open()) {
-			result = connection.createQuery(statement)
+			Query query = connection.createQuery(statement)
 				.addParameter("minLat", boundingBox[0].getLatitude())
 				.addParameter("maxLat", boundingBox[1].getLatitude())
 				.addParameter("minLong", boundingBox[0].getLongitude())
-				.addParameter("maxLong", boundingBox[1].getLongitude())
-				.executeAndFetchTable()
-				.asList()
+				.addParameter("maxLong", boundingBox[1].getLongitude());
+			List<Map<String, Object>> rows = query.executeAndFetchTable().asList();
+			int size = min(rows.size(), MaximumRows);
+			result = rows.subList(0, size)
 				.stream()
 				.map(this::toPhoto)
 				.collect(toList());

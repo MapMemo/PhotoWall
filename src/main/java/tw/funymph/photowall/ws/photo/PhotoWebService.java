@@ -53,7 +53,7 @@ public class PhotoWebService implements SparkWebService {
 		get("/photos", metaAware(validToken(this::getPhotos)));
 		get("/photos/:id", metaAware(this::getPhoto));
 		get("/photos/:id/thumbnail", metaAware(this::getPhotoThumbnail));
-		get("/photos/nearby", metaAware(validToken(this::getNearbyPhotos)));
+		get("/nearby-photos", metaAware(validToken(this::getNearbyPhotos)));
 	}
 
 	public Object getPhoto(Request request, Response response) throws Exception {
