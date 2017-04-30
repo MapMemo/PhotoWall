@@ -19,10 +19,10 @@ import tw.funymph.photowall.core.Authentication;
 public interface AuthenticationRepository {
 
 	/**
-	 * Get the authentication specified by the token (not the identity).
+	 * Get the authentication specified by the token (not identity).
 	 * 
 	 * @param token the access token
-	 * @return the authentication
+	 * @return the authentication if any error occurred
 	 */
 	public Authentication get(String token);
 
@@ -33,4 +33,12 @@ public interface AuthenticationRepository {
 	 * @throws RepositoryException if any error occurred
 	 */
 	public void save(Authentication authentication) throws RepositoryException;
+
+	/**
+	 * Remove the authentication specified by the token (not identity).
+	 *  
+	 * @param token the access token
+	 * @throws RepositoryException if any error occurred
+	 */
+	public void delete(String token) throws RepositoryException;
 }

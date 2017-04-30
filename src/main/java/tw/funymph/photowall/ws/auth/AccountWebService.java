@@ -7,24 +7,24 @@
 package tw.funymph.photowall.ws.auth;
 
 import static java.lang.String.format;
-import static java.nio.file.Files.createDirectories;
-import static java.nio.file.Paths.get;
-import static spark.Spark.post;
-import static tw.funymph.photowall.utils.IOUtils.copy;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
+import static spark.Spark.*;
 import static tw.funymph.photowall.utils.IOUtils.toMD5;
+import static tw.funymph.photowall.utils.JsonUtils.toObject;
+import static tw.funymph.photowall.utils.MapUtils.getString;
 import static tw.funymph.photowall.utils.StringUtils.assertNotBlank;
-import static tw.funymph.photowall.utils.StringUtils.equalsIgnoreCase;
 import static tw.funymph.photowall.ws.auth.AccountFormatter.publicInfo;
-import static tw.funymph.photowall.ws.HttpHeaders.contentDispositionFilename;
 
-import java.io.FileOutputStream;
 import java.nio.file.Path;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import spark.Request;
 import spark.Response;
+import tw.funymph.photowall.core.Account;
 import tw.funymph.photowall.core.AccountManager;
 import tw.funymph.photowall.core.AccountManagerException;
 import tw.funymph.photowall.core.Authentication;
@@ -33,7 +33,7 @@ import tw.funymph.photowall.ws.SparkWebService;
 import tw.funymph.photowall.ws.WebServiceException;
 
 /**
- * This class handles the requests to <code>/ws/accounts/*</code>.
+ * This class handles the requests to <code>/ws/accounts/*</code> and <code>/ws/authentications/*</code>.
  * 
  * @author Spirit Tu
  * @version 1.0
@@ -56,8 +56,13 @@ public class AccountWebService implements SparkWebService {
 	@Override
 	public void routes() {
 		post("/accounts", metaAware(this::register));
-		post("/me/portrait", metaAware(this::changePortrait));
+		post("/portraits/mine", metaAware(validToken(this::changePortrait)));
 		post("/authentications", metaAware(this::login));
+		get("/portraits/:id", metaAware(this::getPortrait));
+		get("/profiles/:id", metaAware(validToken(this::getAccount)));
+		get("/profiles", metaAware(validToken(this::getAccounts)));
+		put("/profiles/mine", metaAware(validToken(this::editProfile)));
+		delete("/authentications/mine", metaAware(this::logout));
 	}
 
 	/**
@@ -73,7 +78,10 @@ public class AccountWebService implements SparkWebService {
 		try {
 			RegistrationRequest registration = new Gson().fromJson(request.body(), RegistrationRequest.class);
 			registration.validate();
-			return publicInfo(accountManager.register(registration.getIdentity(), registration.getNickname(), registration.getPassword()));
+			Account account = accountManager.register(registration.getEamil(), registration.getNickname(), registration.getPassword());
+			Authentication authentication = accountManager.login(registration.getEamil(), registration.getPassword());
+			response.header(AuthToken, authentication.getToken());
+			return publicInfo(account);
 		}
 		catch (JsonSyntaxException e) {
 			throw new WebServiceException(BadRequest, -1, "invalid request format");
@@ -99,6 +107,12 @@ public class AccountWebService implements SparkWebService {
 		}
 		Authentication authentication = accountManager.login(credentials[0], credentials[1]);
 		response.header(AuthToken, authentication.getToken());
+		return publicInfo(accountManager.checkAccount(authentication.getToken()));
+	}
+
+	public Object logout(Request request, Response response) throws Exception {
+		String token = request.headers(AuthToken);
+		accountManager.logout(token);
 		return null;
 	}
 
@@ -112,15 +126,40 @@ public class AccountWebService implements SparkWebService {
 	 * @throws Exception if any error occurred
 	 */
 	public Object changePortrait(Request request, Response response) throws Exception {
-		if (!equalsIgnoreCase(BinaryOctetStream, request.headers(ContentType))) {
-			throw new WebServiceException(NotAcceptable, -1, format("the content type must be %s", BinaryOctetStream));
-		}
-		// TODO: get the account information from the request and use the account's hashed information as the saved filename
-		String contentDisposition = assertNotBlank(request.headers(ContentDisposition), "the content-disposition is required");
-		Path path = get("files", contentDispositionFilename(contentDisposition));
-		createDirectories(path.getParent());
-		copy(request.raw().getInputStream(), new FileOutputStream(path.toFile()));
+		Account account = authenticatedAccount(request);
+		Path path = saveFile(request, "portraits", account.getId());
 		response.header(ETag, toMD5(path.toFile()));
 		return null;
+	}
+
+	public Object editProfile(Request request, Response response) throws Exception {
+		Account account = authenticatedAccount(request);
+		Map<String, Object> requestBody = toObject(request.body());
+		if (getString(requestBody, "nickname") != null) {
+			account = accountManager.changeNickname(account.getId(), getString(requestBody, "nickname"));
+		}
+		return publicInfo(account);
+	}
+
+	public Object getPortrait(Request request, Response response) throws Exception {
+		String id = request.params("id");
+		assertNotBlank(id, "the id is not specified");
+		response.redirect(format("/portraits/%s", id));
+		return null;
+	}
+
+	public Object getAccounts(Request request, Response response) throws Exception {
+		Account[] accounts = accountManager.getAll();
+		return stream(accounts).map(AccountFormatter::publicInfo).collect(toList());
+	}
+
+	public Object getAccount(Request request, Response response) throws Exception {
+		String id = request.params("id");
+		assertNotBlank(id, "the id is not specified");
+		Account account = accountManager.getAccount(id);
+		if (account == null) {
+			throw new WebServiceException(404, -1, "the account does not exist");
+		}
+		return publicInfo(account);
 	}
 }

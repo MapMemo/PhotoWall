@@ -40,4 +40,28 @@ public interface MapUtils {
 	public static <K, V> boolean notEmpty(Map<K, V> map) {
 		return (map != null)? map.size() > 0 : false; 
 	}
+
+	public static <V> String getString(Map<String, V> map, String key) {
+		return getString(map, key, null);
+	}
+
+	public static <V> String getString(Map<String, V> map, String key, String defaultValue) {
+		return map.containsKey(key) ? (String)map.get(key) : defaultValue;
+	}
+
+	public static <V> Double getDouble(Map<String, V> map, String key) {
+		return getDouble(map, key, null);
+	}
+
+	public static <V> Double getDouble(Map<String, V> map, String key, Double defaultValue) {
+		return map.containsKey(key) ? (Double)map.get(key) : defaultValue;
+	}
+
+	public static <V> Long getLong(Map<String, V> map, String key) {
+		return getLong(map, key, null);
+	}
+
+	public static <V> Long getLong(Map<String, V> map, String key, Long defaultValue) {
+		return map.containsKey(key) ? (Long)map.get(key) : defaultValue;
+	}
 }
