@@ -8,6 +8,7 @@ package tw.funymph.photowall;
 
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
+import static java.nio.file.Files.createDirectories;
 import static spark.Spark.*;
 import static tw.funymph.photowall.ws.HttpStatusCodes.NotFound;
 import static tw.funymph.photowall.ws.SparkWebService.enableCORS;
@@ -15,7 +16,9 @@ import static tw.funymph.photowall.ws.SparkWebService.wrapException;
 import static tw.funymph.photowall.wss.WebSocketEventHandler.EventPath;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -76,6 +79,7 @@ public class PhotoWall {
 		DataSource dataSource = setUpDatabase(properties);
 		sql2o = new Sql2o(dataSource);
 		webSocket(EventPath, WebSocketEventHandler.class);
+		setUpFileFolders();
 		staticFiles.externalLocation(new File("files").getAbsolutePath());
 		notFound((request, response) -> {
 			return wrapException(response, currentTimeMillis(), new WebServiceException(NotFound, -1, format("no action for %s %s", request.requestMethod(), request.pathInfo())));
@@ -123,6 +127,12 @@ public class PhotoWall {
 			properties.load(stream);
 		}
 		return properties;
+	}
+
+	private static void setUpFileFolders() throws IOException {
+		createDirectories(Paths.get("files", "portraits"));
+		createDirectories(Paths.get("files", "photos"));
+		createDirectories(Paths.get("files", "thumbnails"));
 	}
 
 	/**
